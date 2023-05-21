@@ -2,6 +2,8 @@
 
 Unofficial Implementation of *1712.06087 "Zero-Shot" Super-Resolution using Deep Internal Learning by Assaf Shocher, Nadav Cohen, Michal Irani.*
  
+This repo references: https://github.com/jacobgil/pytorch-zssr
+
 Official Project page: http://www.wisdom.weizmann.ac.il/~vision/zssr/
 
 Paper: https://arxiv.org/abs/1712.06087
