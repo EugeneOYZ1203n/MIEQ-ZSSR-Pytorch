@@ -1,4 +1,5 @@
 import numpy as np
+import pyiqa
 from net import ZSSRNet
 from data import DataSampler
 import torch
@@ -11,6 +12,9 @@ import sys
 from torchvision import transforms
 import tqdm
 import argparse
+
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 def weights_init_kaiming(m):
@@ -28,6 +32,8 @@ def adjust_learning_rate(optimizer, new_lr):
     """Sets the learning rate to the initial LR decayed by 10 every 30 epochs"""
     for param_group in optimizer.param_groups:
         param_group['lr'] = new_lr
+
+input_image = None
 
 def train(model, img, sr_factor, num_batches, learning_rate, crop_size):
     loss = nn.L1Loss()
@@ -66,7 +72,6 @@ def train(model, img, sr_factor, num_batches, learning_rate, crop_size):
             if iter > num_batches:
                 print('Done training.')
                 break
-            
 
 def test(model, img, sr_factor):
     model.eval()
@@ -88,8 +93,11 @@ def test(model, img, sr_factor):
     # 由于是灰度图像，所以这里像素值的min=0，max=1
     o[np.where(o < 0)] = 0.0
     o[np.where(o > 1)] = 1.0
+
     output = torch.from_numpy(o)
+
     output = transforms.ToPILImage()(output) 
+    
     output.save('zssr.png')
 
 def get_args():
@@ -109,10 +117,10 @@ def get_args():
     return args
 
 if __name__ == '__main__':
-    # args = get_args()
+    args = get_args()
 
-    # img = PIL.Image.open(args.img)
-    img = PIL.Image.open("examples/lincoln.png")
+    img = PIL.Image.open(args.img).convert("RGB")
+    #img = PIL.Image.open("examples/lincoln.png")
     num_channels = len(np.array(img).shape)
     if num_channels == 3:
         model = ZSSRNet(input_channels = 3)
@@ -125,7 +133,23 @@ if __name__ == '__main__':
     # Weight initialization
     model.apply(weights_init_kaiming)  # 为了解决梯度消失/爆炸问题，将所有conv和linear进行KaiMing初始化。其原理是保持每一层的输入和输出的方差一致。
 
-    # train(model, img, args.factor, args.num_batches, args.lr, args.crop)
-    # test(model, img, args.factor)
-    train(model, img, 2, 15000, 0.00001, 128)
-    test(model, img, 2)
+    input_image = np.array(img)
+
+    train(model, img, args.factor, args.num_batches, args.lr, args.crop)
+    test(model, img, args.factor)
+    #train(model, img, 2, 15000, 0.00001, 128)
+    #test(model, img, 2)
+
+    iqa_ILNIQE = pyiqa.create_metric('ilniqe', device=device)
+    iqa_NIQE = pyiqa.create_metric('niqe', device=device)
+    prior_ILNIQE = iqa_ILNIQE('./low_res.png')
+    prior_NIQE = iqa_NIQE('./low_res.png')
+    after_ILNIQE = iqa_ILNIQE('./zssr.png')
+    after_NIQE = iqa_NIQE('./zssr.png')
+    print(f"Score Prior: " +
+            f"\n\t{prior_NIQE.item()} (NIQE), " +
+            f"\n\t{prior_ILNIQE.item()} (ILNIQE)")
+    print(f"Score After: " +
+            f"\n\t{after_NIQE.item()} (NIQE), " +
+            f"\n\t{after_ILNIQE.item()} (ILNIQE)")
+
