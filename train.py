@@ -1,5 +1,4 @@
 import numpy as np
-import pyiqa
 from net import ZSSRNet
 from data import DataSampler
 import torch
@@ -73,14 +72,14 @@ def train(model, img, sr_factor, num_batches, learning_rate, crop_size):
                 print('Done training.')
                 break
 
-def test(model, img, sr_factor):
+def test(model, img, sr_factor, out_path):
     model.eval()
 
     # 由于model的输入输出尺寸相等，因此要将test image扩大为原来的两倍，才能得到尺寸更大的SR图像
     # 使用双三次插值法来扩大test image
     img = img.resize((int(img.size[0]*sr_factor), \
         int(img.size[1]*sr_factor)), resample=PIL.Image.BICUBIC)
-    img.save('low_res.png')
+    ##img.save('low_res.png')
 
     img = transforms.ToTensor()(img)
     img = torch.unsqueeze(img, 0)
@@ -98,7 +97,7 @@ def test(model, img, sr_factor):
 
     output = transforms.ToPILImage()(output) 
     
-    output.save('zssr.png')
+    output.save(out_path)
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -115,6 +114,22 @@ def get_args():
     args = parser.parse_args()
 
     return args
+
+def train_model(img, factor, batches, lr, crop, out_path):
+    num_channels = len(np.array(img).shape)
+    if num_channels == 3:
+        model = ZSSRNet(input_channels = 3)
+    elif num_channels == 2:
+        model = ZSSRNet(input_channels = 1)
+    else:
+        print("Expecting RGB or gray image, instead got", img.size)
+        sys.exit(1)
+
+    model.apply(weights_init_kaiming) 
+
+    train(model, img, factor, batches, lr, crop)
+    test(model, img, factor, out_path)
+
 
 if __name__ == '__main__':
     args = get_args()
@@ -133,9 +148,9 @@ if __name__ == '__main__':
     # Weight initialization
     model.apply(weights_init_kaiming)  # 为了解决梯度消失/爆炸问题，将所有conv和linear进行KaiMing初始化。其原理是保持每一层的输入和输出的方差一致。
 
-    input_image = np.array(img)
+    ##input_image = np.array(img)
 
-    train(model, img, args.factor, args.num_batches, args.lr, args.crop)
+    train(model, img, args.factor, args.num_batches, args.lr, args.crop, "zssr.png")
     test(model, img, args.factor)
     #train(model, img, 2, 15000, 0.00001, 128)
     #test(model, img, 2)
