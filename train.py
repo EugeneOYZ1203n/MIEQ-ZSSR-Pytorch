@@ -140,16 +140,16 @@ if __name__ == '__main__':
     #train(model, img, 2, 15000, 0.00001, 128)
     #test(model, img, 2)
 
-    iqa_ILNIQE = pyiqa.create_metric('ilniqe', device=device)
-    iqa_NIQE = pyiqa.create_metric('niqe', device=device)
-    prior_ILNIQE = iqa_ILNIQE('./low_res.png')
-    prior_NIQE = iqa_NIQE('./low_res.png')
-    after_ILNIQE = iqa_ILNIQE('./zssr.png')
-    after_NIQE = iqa_NIQE('./zssr.png')
-    print(f"Score Prior: " +
-            f"\n\t{prior_NIQE.item()} (NIQE), " +
-            f"\n\t{prior_ILNIQE.item()} (ILNIQE)")
-    print(f"Score After: " +
-            f"\n\t{after_NIQE.item()} (NIQE), " +
-            f"\n\t{after_ILNIQE.item()} (ILNIQE)")
+    #iqa_ILNIQE = pyiqa.create_metric('ilniqe', device=device)
+    #iqa_NIQE = pyiqa.create_metric('niqe', device=device)
+    #prior_ILNIQE = iqa_ILNIQE('./low_res.png')
+    #prior_NIQE = iqa_NIQE('./low_res.png')
+    #after_ILNIQE = iqa_ILNIQE('./zssr.png')
+    #after_NIQE = iqa_NIQE('./zssr.png')
+    #print(f"Score Prior: " +
+    #        f"\n\t{prior_NIQE.item()} (NIQE), " +
+    #        f"\n\t{prior_ILNIQE.item()} (ILNIQE)")
+    #print(f"Score After: " +
+    #        f"\n\t{after_NIQE.item()} (NIQE), " +
+    #        f"\n\t{after_ILNIQE.item()} (ILNIQE)")
 

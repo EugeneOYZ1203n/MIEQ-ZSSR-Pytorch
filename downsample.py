@@ -13,6 +13,6 @@ if __name__ == '__main__':
 
         img = PIL.Image.open(img_name).convert("RGB")
 
-        img = img.resize((int(img.size[0]*0.5), \
-            int(img.size[1]*0.5)), resample=PIL.Image.BICUBIC)
-        img.save('./secret/low_res/lowres' + str(i) + '.jpg')
+        img = img.resize((int(img.size[0]*0.25), \
+            int(img.size[1]*0.25)), resample=PIL.Image.BICUBIC)
+        img.save('./secret/low_res2/lowres' + str(i) + '.jpg')
