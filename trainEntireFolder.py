@@ -52,15 +52,15 @@ if __name__ == '__main__':
         img_path = os.path.join(args.imgs, img)
         gt_img = PIL.Image.open(img_path).convert('L')
 
-        out_path = os.path.join(args.imgs, "lr_" + img)
+        out_path = os.path.join(args.output, "lr_" + img)
         lr_img = downsample(gt_img, args.factor, out_path)
 
         ## Apply preprocessing
-        out_path = os.path.join(args.imgs, "pp_" + img)
+        out_path = os.path.join(args.output, "pp_" + img)
         pp_img = image_preprocessing(lr_img, out_path)
 
         ## Generate zssr
-        out_path = os.path.join(args.imgs, "sr_" + img)
+        out_path = os.path.join(args.output, "sr_" + img)
         train_model(pp_img, args.factor, args.batches, args.lr, args.crop, out_path)
         
 
