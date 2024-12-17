@@ -2,6 +2,7 @@ import argparse
 import os
 
 import PIL
+from PIL import Image, ImageEnhance, ImageFilter
 from train import train_model
 
 
@@ -22,12 +23,22 @@ def get_args():
 
     return args
 
-def downsample(img_name, factor, out_path):
-    img = PIL.Image.open(img_name).convert('L')
-
+def downsample(img, factor, out_path):
     img = img.resize((int(img.size[0]/factor), \
         int(img.size[1]/factor)), resample=PIL.Image.BICUBIC)
     img.save(out_path)
+
+    return img
+
+def image_preprocessing(img, out_path):
+    img_denoised = img.filter(ImageFilter.GaussianBlur(radius=1))
+    img_sharpened = img_denoised.filter(ImageFilter.SHARPEN)
+
+    enhancer = ImageEnhance.Contrast(img_sharpened)
+    img_contrast = enhancer.enhance(1.2)
+    img_contrast.save(out_path)
+
+    return img_contrast
 
 if __name__ == '__main__':
     args = get_args()
@@ -36,21 +47,20 @@ if __name__ == '__main__':
 
     print("Found images:" + ",".join(gt_files))
 
-    lr_files = []
-
-    ## Downsample all images
     for i, img in enumerate(gt_files):
-        out_name = "lr_" + img
+        ## Downsample all images
         img_path = os.path.join(args.imgs, img)
-        out_path = os.path.join(args.imgs, out_name)
-        downsample(img_path, args.factor, out_path)
-        lr_files.append(out_name)
-    
-    ## Generate ZSSR images
-    for i, img in enumerate(lr_files):
-        img_path = os.path.join(args.imgs, img)
-        lr_img = PIL.Image.open(img_path).convert("L")
-        out_name = "sr_" + img[3:]
-        out_path = os.path.join(args.imgs, out_name)
-        train_model(lr_img, args.factor, args.batches, args.lr, args.crop, out_path)
+        gt_img = PIL.Image.open(img_path).convert('L')
+
+        out_path = os.path.join(args.imgs, "lr_" + img)
+        lr_img = downsample(gt_img, args.factor, out_path)
+
+        ## Apply preprocessing
+        out_path = os.path.join(args.imgs, "pp_" + img)
+        pp_img = image_preprocessing(lr_img, out_path)
+
+        ## Generate zssr
+        out_path = os.path.join(args.imgs, "sr_" + img)
+        train_model(pp_img, args.factor, args.batches, args.lr, args.crop, out_path)
+        
 
