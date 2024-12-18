@@ -1,11 +1,8 @@
 import argparse
 import os
-
 import PIL
-from PIL import Image, ImageEnhance, ImageFilter
-import cv2
-import numpy as np
 from train import train_model
+from image_preprocessing import *
 
 
 def get_args():
@@ -33,31 +30,8 @@ def downsample(img, factor, out_path):
     return img
 
 def image_preprocessing(img, out_path):
-    output = clahe(img)
+    output = contrast_clahe(img)
     output.save(out_path)
-
-    return output
-
-def denoise_sharpen_contrast(img):
-    img_denoised = img.filter(ImageFilter.GaussianBlur(radius=1))
-    img_sharpened = img_denoised.filter(ImageFilter.SHARPEN)
-
-    enhancer = ImageEnhance.Contrast(img_sharpened)
-    img_contrast = enhancer.enhance(1.2)
-
-    return img_contrast
-
-def edge_enhancement(img):
-    return img.filter(ImageFilter.UnsharpMask(radius=2, percent=150, threshold=3))
-
-def clahe(img):
-    img_np = np.array(img)
-    
-    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
-    clahe_img = clahe.apply(img_np)
-    
-    # Convert back to Pillow image
-    output = Image.fromarray(clahe_img)
 
     return output
 
@@ -69,6 +43,8 @@ if __name__ == '__main__':
     print("Found images:" + ",".join(gt_files))
 
     for i, img in enumerate(gt_files):
+        print("\n\nProcessing: " + img)
+
         ## Downsample all images
         img_path = os.path.join(args.imgs, img)
         gt_img = PIL.Image.open(img_path).convert('L')
