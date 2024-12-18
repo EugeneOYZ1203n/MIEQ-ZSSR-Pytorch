@@ -30,10 +30,12 @@ def downsample(img, factor, out_path):
     return img
 
 def image_preprocessing(img, out_path):
-    output = contrast_clahe(img)
-    output.save(out_path)
+    img = denoise_fastN1MeansDenoising(5, 7)(img)
+    img = contrast_clahe(clipLimit=3.0)(img)
+    img = edge_unsharpMask()(img)
+    img.save(out_path)
 
-    return output
+    return img
 
 if __name__ == '__main__':
     args = get_args()
