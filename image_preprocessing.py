@@ -147,3 +147,23 @@ def misc_convert_binary(threshold=50):
         output = Image.fromarray(edge_mask)
         return output
     return processing
+
+def misc_normalise_img(target_min = 0, target_max = 255):
+    def processing(img):
+        img_np = np.array(img)
+        img_np = img_np.astype(np.float32)
+    
+        # Find minimum and maximum pixel values in the image
+        img_min = np.min(img_np)
+        img_max = np.max(img_np)
+        
+        # Avoid division by zero for uniform images
+        if img_max == img_min:
+            return np.full_like(img_np, target_min, dtype=np.float32)  # Uniform image
+
+        # Apply min-max normalization
+        normalized_image = target_min + (img_np - img_min) * (target_max - target_min) / (img_max - img_min)
+        normalized_image = normalized_image.astype(np.uint8)
+        output = Image.fromarray(normalized_image)
+        return output
+    return processing

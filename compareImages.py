@@ -27,7 +27,7 @@ if __name__ == '__main__':
     #gt_files = gt_files[1:2] + gt_files[7:]
     sr_files = sorted(os.listdir(sr_output_dir))
 
-    print(gt_files, sr_files)
+    #print(gt_files, sr_files)
 
     for gt_file, sr_file in zip(gt_files, sr_files):
         gt_path = os.path.join(ground_truth_dir, gt_file)
@@ -40,7 +40,7 @@ if __name__ == '__main__':
         gt_img_r = gt_img.resize((sr_width, sr_height), Image.BICUBIC)
         gt_img_r = np.array(gt_img_r)
 
-        print(sr_img.shape, gt_img_r.shape)
+        #print(sr_img.shape, gt_img_r.shape)
 
         psnr = calculate_psnr(sr_img, gt_img_r, data_range=gt_img_r.max()-gt_img_r.min())
         ssim = calculate_ssim(sr_img, gt_img_r, 
